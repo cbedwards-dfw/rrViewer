@@ -9,132 +9,140 @@
 #' @return Figure object made of ggplots combined using `{patchwork}`.
 #' @export
 #'
-plot_rr_mu = function(data, stock.use,
-                      mu.use,
-                      normalize_fisheries = TRUE,
-                      base_font_size = 13){
-
+plot_rr_mu <- function(data, stock.use,
+                       mu.use,
+                       normalize_fisheries = TRUE,
+                       base_font_size = 13) {
   ## Deal with asterixes
-  mu.use = gsub("[*]*", "", mu.use)
-  data$management_unit_name = gsub("[*]*", "", data$management_unit_name)
+  mu.use <- gsub("[*]*", "", mu.use)
+  data$management_unit_name <- gsub("[*]*", "", data$management_unit_name)
 
   ## input checking
-  stock.use <- rlang::arg_match(stock.use,
-                                unique(data$stock))
-  mu.options = data |>
+  stock.use <- rlang::arg_match(
+    stock.use,
+    unique(data$stock)
+  )
+  mu.options <- data |>
     dplyr::filter(.data$stock == stock.use) |>
     dplyr::pull(.data$management_unit_name) |>
     unique()
-  mu.use <- rlang::arg_match(mu.use,
-                             mu.options)
+  mu.use <- rlang::arg_match(
+    mu.use,
+    mu.options
+  )
 
   ## split apart left block based on whether or not to normalize
-  cols_static = c("terminal_run", "pct_terminal", "escapement", "total_catch")
-  dat.use = data |>
+  cols_static <- c("terminal_run", "pct_terminal", "escapement", "total_catch")
+  dat.use <- data |>
     dplyr::filter(.data$stock == stock.use) |>
     dplyr::filter(.data$management_unit_name == mu.use) |>
     dplyr::filter(.data$block == "left")
-  dat.use.static = dat.use |>
+  dat.use.static <- dat.use |>
     dplyr::filter(.data$col_name %in% cols_static)
 
-  fisheries.use = dat.use |>
-    dplyr::filter(! .data$col_name %in% cols_static) |>
+  fisheries.use <- dat.use |>
+    dplyr::filter(!.data$col_name %in% cols_static) |>
     dplyr::group_by(.data$col_name) |>
     dplyr::summarize(value.sum = sum(.data$value)) |>
     dplyr::ungroup() |>
-    dplyr::filter(.data$value.sum>0) |>
+    dplyr::filter(.data$value.sum > 0) |>
     dplyr::pull(.data$col_name)
 
 
   ## normalize
-  if(normalize_fisheries){
-    dat.use.fisheries = dat.use |>
+  if (normalize_fisheries) {
+    dat.use.fisheries <- dat.use |>
       dplyr::filter(.data$col_name %in% fisheries.use) |>
       dplyr::group_by(.data$year) |>
-      dplyr::mutate(value = .data$value/sum(.data$value, na.rm = T)) |>
+      dplyr::mutate(value = .data$value / sum(.data$value, na.rm = T)) |>
       dplyr::ungroup()
-    fisheries.title = "Normalized fisheries"
+    fisheries.title <- "Normalized fisheries"
   } else {
-    dat.use.fisheries = dat.use |>
+    dat.use.fisheries <- dat.use |>
       dplyr::filter(.data$col_name %in% fisheries.use)
-    fisheries.title = "Fisheries (reported values)"
+    fisheries.title <- "Fisheries (reported values)"
   }
 
-  block.use = "left"
-  gp1a =  dat.use.static |>
+  block.use <- "left"
+  gp1a <- dat.use.static |>
     dplyr::filter(.data$stock == stock.use) |>
     dplyr::filter(.data$management_unit_name == mu.use) |>
     dplyr::filter(.data$block == block.use) |>
-    ggplot2::ggplot(ggplot2::aes(x = .data$year, y = .data$value))+
-    ggplot2::geom_path()+
-    ggplot2::geom_point()+
-    ggplot2::facet_wrap(.~ .data$col_name, scales = "free_y") +
+    ggplot2::ggplot(ggplot2::aes(x = .data$year, y = .data$value)) +
+    ggplot2::geom_path() +
+    ggplot2::geom_point() +
+    ggplot2::facet_wrap(. ~ .data$col_name, scales = "free_y") +
     ggplot2::labs(title = "Left block", subtitle = "Overview") +
-    ggplot2::scale_y_continuous(labels = function(x){format(x, big.mark = ",")}) +
+    ggplot2::scale_y_continuous(labels = function(x) {
+      format(x, big.mark = ",")
+    }) +
     ggplot2::theme_bw(base_size = base_font_size)
 
-  gp1b =  dat.use.fisheries |>
+  gp1b <- dat.use.fisheries |>
     dplyr::filter(.data$stock == stock.use) |>
     dplyr::filter(.data$management_unit_name == mu.use) |>
     dplyr::filter(.data$block == block.use) |>
-    ggplot2::ggplot(ggplot2::aes(x = .data$year, y = .data$value))+
-    ggplot2::geom_path()+
-    ggplot2::geom_point()+
-    ggplot2::facet_wrap(.~ .data$col_name, scales = "free_y")+
+    ggplot2::ggplot(ggplot2::aes(x = .data$year, y = .data$value)) +
+    ggplot2::geom_path() +
+    ggplot2::geom_point() +
+    ggplot2::facet_wrap(. ~ .data$col_name, scales = "free_y") +
     ggplot2::labs(subtitle = fisheries.title) +
     ggplot2::theme_bw(base_size = base_font_size)
 
-  if(normalize_fisheries){
-    gp1b <- gp1b + ggplot2::scale_y_continuous(labels = function(x){paste0(round(100*x, 1), "%")})
+  if (normalize_fisheries) {
+    gp1b <- gp1b + ggplot2::scale_y_continuous(labels = function(x) {
+      paste0(round(100 * x, 1), "%")
+    })
   } else {
-    gp1b <- gp1b + ggplot2::scale_y_continuous(labels = function(x){format(x, big.mark = ",")})
+    gp1b <- gp1b + ggplot2::scale_y_continuous(labels = function(x) {
+      format(x, big.mark = ",")
+    })
   }
 
-  gp1 = (gp1a / gp1b) + patchwork::plot_layout(heights = c(1,2))
+  gp1 <- (gp1a / gp1b) + patchwork::plot_layout(heights = c(1, 2))
 
-  block.use = "right"
+  block.use <- "right"
 
-  data.right = data |>
+  data.right <- data |>
     dplyr::filter(.data$stock == stock.use) |>
     dplyr::filter(.data$management_unit_name == mu.use) |>
     dplyr::filter(.data$block == block.use) |>
     dplyr::filter(!is.na(.data$value))
 
   ## making subplots when we have super titles
-  if(any(! unique(data.right$col_name_super) %in% c("", "Aggregate"))){
-    fig.ls = list()
-    is.first = TRUE
-    for(i.super in seq_along(unique(data.right$col_name_super))){
-      super.cur = unique(data.right$col_name_super)[i.super]
-      fig.ls[[i.super]] <-  data.right |>
+  if (any(!unique(data.right$col_name_super) %in% c("", "Aggregate"))) {
+    fig.ls <- list()
+    is.first <- TRUE
+    for (i.super in seq_along(unique(data.right$col_name_super))) {
+      super.cur <- unique(data.right$col_name_super)[i.super]
+      fig.ls[[i.super]] <- data.right |>
         dplyr::filter(.data$col_name_super == super.cur) |>
-        ggplot2::ggplot(ggplot2::aes(x = .data$year, y = .data$value))+
-        ggplot2::geom_path()+
-        ggplot2::geom_point()+
-        ggplot2::facet_wrap(.~ .data$col_name, scales = "free_y")+
-        ggplot2::labs(subtitle = super.cur)+
-        ggplot2::scale_y_continuous(labels = function(x){format(x, big.mark = ",")}) +
+        ggplot2::ggplot(ggplot2::aes(x = .data$year, y = .data$value)) +
+        ggplot2::geom_path() +
+        ggplot2::geom_point() +
+        ggplot2::facet_wrap(. ~ .data$col_name, scales = "free_y") +
+        ggplot2::labs(subtitle = super.cur) +
+        ggplot2::scale_y_continuous(labels = function(x) {
+          format(x, big.mark = ",")
+        }) +
         ggplot2::theme_bw(base_size = base_font_size)
-      if(is.first){
+      if (is.first) {
         fig.ls[[i.super]] <- fig.ls[[i.super]] + ggplot2::ggtitle("Right block")
       }
-      is.first = FALSE
+      is.first <- FALSE
     }
-    gp2 = patchwork::wrap_plots(fig.ls, ncol = 1)
-  } else{
-
-    gp2 =  data.right
-    ggplot2::ggplot(ggplot2::aes(x = .data$year, y = .data$value))+
-      ggplot2::geom_path()+
-      ggplot2::geom_point()+
-      ggplot2::facet_wrap(.~ .data$col_name, scales = "free_y")+
-      ggplot2::labs(title = glue::glue("{block.use} block"))+
+    gp2 <- patchwork::wrap_plots(fig.ls, ncol = 1)
+  } else {
+    gp2 <- data.right
+    ggplot2::ggplot(ggplot2::aes(x = .data$year, y = .data$value)) +
+      ggplot2::geom_path() +
+      ggplot2::geom_point() +
+      ggplot2::facet_wrap(. ~ .data$col_name, scales = "free_y") +
+      ggplot2::labs(title = glue::glue("{block.use} block")) +
       ggplot2::theme_bw(base_size = base_font_size)
   }
-  plot_title = glue::glue("Stock: {stock.use}\nMU: {mu.use}")
+  plot_title <- glue::glue("Stock: {stock.use}\nMU: {mu.use}")
 
-  return( (gp1 | gp2) +
-            patchwork::plot_annotation(title = plot_title)
-  )
-
+  return((gp1 | gp2) +
+    patchwork::plot_annotation(title = plot_title))
 }

@@ -23,8 +23,10 @@
 read_rr_trs <- function(path,
                         combine_continued = TRUE) {
   ## if updating, pay attention to ordering. Don't want to leave trailing chars by accident.
-  continued_patterns <- c("[(]Continued[)]", " [(]Continued[)]", "[-]Continued", "Continued",
-                          " $")
+  continued_patterns <- c(
+    "[(]Continued[)]", " [(]Continued[)]", "[-]Continued", "Continued",
+    " $"
+  )
 
 
   all.sheets <- readxl::excel_sheets(path)
@@ -191,9 +193,9 @@ read_rr_trs <- function(path,
     ) |>
     dplyr::mutate(value = tidyr::replace_na(.data$value, 0))
 
-  if(combine_continued){
-    for(cur.pattern in continued_patterns){
-      fin.df$stock = gsub(cur.pattern, "", fin.df$stock, ignore.case = TRUE)
+  if (combine_continued) {
+    for (cur.pattern in continued_patterns) {
+      fin.df$stock <- gsub(cur.pattern, "", fin.df$stock, ignore.case = TRUE)
     }
   }
 

@@ -11,13 +11,15 @@
 #'
 #' @return character vector
 #' @export
-list_rr_options = function(data, stock = NULL){
-  if(is.null(stock)){
+list_rr_options <- function(data, stock = NULL) {
+  if (is.null(stock)) {
     cli::cli_alert("`stock` not provided; listing stock options")
-  unique(data$stock)
+    unique(data$stock)
   } else {
-    stock <- rlang::arg_match(stock,
-                     unique(data$stock))
+    stock <- rlang::arg_match(
+      stock,
+      unique(data$stock)
+    )
     cli::cli_alert("`stock` provided; listing management_unit_name options")
     vec <- data |>
       dplyr::filter(.data$stock == stock) |>
