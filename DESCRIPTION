@@ -1,13 +1,24 @@
 Package: rrViewer
-Title: What the Package Does (One Line, Title Case)
+Title: Plotting tools for evaluating Coho run reconstructions
 Version: 0.0.0.9000
 Authors@R: 
     person("Collin", "Edwards", , "Collin.Edwards@dfw.wa.gov", role = c("aut", "cre"),
            comment = c(ORCID = "0000-0002-4937-5159"))
-Description: What the package does (one paragraph).
+Description: One of the yearly tasks of the FRAM team is to complete the Coho Run Reconstruction. This involves careful evaluation of myriad values in excel files to confirm that they are within reasonable expectations. This package assists in this process by plotting the values of the current run reconstruction across equivalent values in past years.
 License: MIT + file LICENSE
 Encoding: UTF-8
 Roxygen: list(markdown = TRUE)
 RoxygenNote: 7.3.2
-URL: https://github.com/cbedwards-dfw/rrViewer
+URL: https://github.com/cbedwards-dfw/rrViewer, https://cbedwards-dfw.github.io/rrViewer/
 BugReports: https://github.com/cbedwards-dfw/rrViewer/issues
+Imports: 
+    cli,
+    dplyr,
+    ggplot2,
+    glue,
+    janitor,
+    patchwork,
+    readxl,
+    rlang,
+    tidyr,
+    zoo
