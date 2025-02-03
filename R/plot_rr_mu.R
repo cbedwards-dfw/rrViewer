@@ -99,7 +99,7 @@ plot_rr_mu <- function(data, stock.use,
     })
   }
 
-  gp1 <- (gp1a / gp1b) + patchwork::plot_layout(heights = c(1, 2))
+  gp1 <- patchwork::wrap_plots(gp1a, gp1b, ncol = 1) + patchwork::plot_layout(heights = c(1, 2))
 
   block.use <- "right"
 
@@ -143,6 +143,7 @@ plot_rr_mu <- function(data, stock.use,
   }
   plot_title <- glue::glue("Stock: {stock.use}\nMU: {mu.use}")
 
-  return((gp1 | gp2) +
+  return(patchwork::wrap_plots(gp1, gp2, nrow = 1) +
     patchwork::plot_annotation(title = plot_title))
 }
+

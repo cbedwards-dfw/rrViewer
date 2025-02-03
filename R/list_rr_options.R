@@ -26,5 +26,6 @@ list_rr_options <- function(data, stock = NULL) {
       dplyr::pull(.data$management_unit_name) |>
       unique()
     vec <- gsub("[*]*", "", vec)
+    return(vec)
   }
 }

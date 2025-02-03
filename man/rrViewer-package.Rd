@@ -13,6 +13,7 @@ Useful links:
 \itemize{
   \item \url{https://github.com/cbedwards-dfw/rrViewer}
   \item \url{https://cbedwards-dfw.github.io/rrViewer/}
+  \item \url{https://framverse.r-universe.dev/rrViewer}
   \item Report bugs at \url{https://github.com/cbedwards-dfw/rrViewer/issues}
 }
 
